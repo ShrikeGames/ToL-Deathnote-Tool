@@ -10,6 +10,7 @@
 - Removed binary as this is not a release. A new binary will be generated with 1.3-RELEASE.
 - [TOLDNT-01] Possible fix for "rogue lines" when pausing and unpausing due to race condition.
 - Individual bug fixes will be in their own branches and merged into this master. 
+- Autoformatted with correct tab/indent sizes. It was defaulting to tab size 4 but indent 3 so you ended up with a hideous mix of tabs and spaces instead of one or the other.
 - Added wrapper function for the alert messages so it can be replaced later with something else easily. 
 - Refactored creation of the main GUI a bit so it references config values. 
 - GUI will now remember its position in the config file and restore it next time you launch the program.
