@@ -12,6 +12,18 @@
 - Individual bug fixes will be in their own branches and merged into this master. 
 ```
 
+# Planned Features (For this Fork)
+```markdown
+- Remove Alert pop-ups and replace with native notifications in the GUI
+- Use GUI buttons instead of F6-10 keys
+- Auto-find and select the colours from ToL instead of asking the user to switch between them
+- Toggle to switch between above auto-mode or manual-mode (similar to existing)
+- Investigate if optimizations of image processing can be done
+- Investigate way to prematurely end image processing if it's taking too long and results are clearly not what you want
+- Investigate way to better map colours of an image to ToL colours.
+- Remember what monitor it was last on and open there instead of always opening on monitor 1
+```
+
 # ORIGINAL FROM 1.2 BELOW
 
 **- Version 1.2**
