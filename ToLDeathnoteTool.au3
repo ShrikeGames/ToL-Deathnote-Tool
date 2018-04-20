@@ -49,7 +49,8 @@ Global $foundColors[9] = [False, False, False, False, False, False, False, False
 Global $selections[8] = ["Please Select BLACK for draw color then press F6 to continue!", "Please Select YELLOW for draw color then press F6 to continue!", "Please Select BLUE for draw color then press F6 to continue!", "Please Select PINK for draw color then press F6 to continue!", "Please Select WHITE for draw color then press F6 to continue!", "Please Select RED for draw color then press F6 to continue!", "Please Select GREEN for draw color then press F6 to continue!", "Please Select PURPLE for draw color then press F6 to continue!"] ;yellow - blue - pink - white - Red - green - purple
 Global $pixelHolder = False
 Global $skipColor = False
-
+Global $mouselocaPrevious = MouseGetPos()
+Global $mousePressed = False
 ;START GUIMsgBox - Shows a message box in the GUI
 Func GUIMsgBox($type, $title, $text)
 	
@@ -1090,20 +1091,26 @@ EndFunc   ;==>MouseIsInPosition
 Func Pause()
 	If ($drawing == 1) Then
 		$scriptPause = Not $scriptPause
+		
 		If ($scriptPause) Then
 			$mouseloca = MouseGetPos()
-			MouseUp("primary")
-			TrayTip("* Paused *", 'Script is "Paused", Press F8 to resume', 20)
-		Else
+			$mousePressed = _IsPressed(01)
 			MouseUp("primary")
 			$mouselocaPrevious = $mouseloca
+			TrayTip("* Paused *", 'Script is "Paused", Press F8 to resume', 20)
+		Else
+			TrayTip("* UNPaused *", 'Script is Live again.', 40)
+			MouseUp("primary")
 			;move our move into position, most computers will be near instant, but some may not.
 			While Not MouseIsInPosition($mouselocaPrevious[0], $mouselocaPrevious[1])
 				MouseMove($mouselocaPrevious[0], $mouselocaPrevious[1], $speed)
 				Sleep(10)
 			WEnd
-			;we have reached the position we wanted, so resume drawing by pushing the left mouse button down again
-			MouseDown("primary")
+			if $mousePressed then
+				MouseDown("primary")
+			Else
+				MouseUp("primary")
+			EndIf
 		EndIf
 		While $scriptPause
 			Switch (GUIGetMsg())
