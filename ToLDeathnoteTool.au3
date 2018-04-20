@@ -1038,6 +1038,19 @@ EndFunc
 Func Nothing ()
 EndFunc
 
+;Determines if the mouse is in the given x,y coord or not. Returns 1 if true, 0 if false.
+Func MouseIsInPosition($x, $y)
+	$mouseloca = MouseGetPos()
+	$currX = $mouseloca[0]
+	$currY = $mouseloca[1]
+	if ($currX == $x And $currY == $y ) Then
+		;return 1/true
+		return 1
+	EndIf
+	;otherwise return 0/false
+	return 0
+EndFunc
+
 ;function to pause and unpause the drawing (example is in ToL if the night is about to end, pause, so when a log appears it doesnt keep drawing thinking the deathnote is still open)
 Func Pause ()
    if ($drawing == 1) Then
@@ -1047,8 +1060,14 @@ Func Pause ()
 		 MouseUp ("primary")
 		 TrayTip("* Paused *", 'Script is "Paused", Press F8 to resume', 20)
 	  else
-		 MouseMove ($mouseloca[0], $mouseloca[1], $speed)
-		 sleep(10)
+	     MouseUp ("primary")
+	     $mouselocaPrevious=$mouseloca
+	     ;move our move into position, most computers will be near instant, but some may not.
+		 While Not MouseIsInPosition($mouselocaPrevious[0], $mouselocaPrevious[1])
+			MouseMove ($mouselocaPrevious[0], $mouselocaPrevious[1], $speed)
+			sleep(10)
+		 WEnd
+		 ;we have reached the position we wanted, so resume drawing by pushing the left mouse button down again
 		 MouseDown ("primary")
 	  EndIf
 	  While $scriptPause
