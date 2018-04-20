@@ -10,6 +10,9 @@
 - Removed binary as this is not a release. A new binary will be generated with 1.3-RELEASE.
 - [TOLDNT-01] Possible fix for "rogue lines" when pausing and unpausing due to race condition.
 - Individual bug fixes will be in their own branches and merged into this master. 
+- Added wrapper function for the alert messages so it can be replaced later with something else easily. 
+- Refactored creation of the main GUI a bit so it references config values. 
+- GUI will now remember its position in the config file and restore it next time you launch the program.
 ```
 
 # Planned Features (For this Fork)
@@ -21,7 +24,7 @@
 - Investigate if optimizations of image processing can be done
 - Investigate way to prematurely end image processing if it's taking too long and results are clearly not what you want
 - Investigate way to better map colours of an image to ToL colours.
-- Remember what monitor it was last on and open there instead of always opening on monitor 1
+- [Done] Remember what monitor it was last on and open there instead of always opening on monitor 1
 - Refactor code into smaller functions for easier maintenance
 - Factor out common functionality into functions for code re-use
 - Adjust GUI creation to be responsive/flow instead of hard-coded coordinates and sizes
