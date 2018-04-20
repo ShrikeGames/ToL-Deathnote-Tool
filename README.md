@@ -1,4 +1,18 @@
+# Throne Of Lies Deathnote Tool
+### Created By: Dewblackio2
+### Forked By: Matt Thomas, ShrikeGames.com
+
 # Changelog
+**- Version 1.3-SNAPSHOT**
+```markdown
+- This is a fork of the original to test different changes and fixes.
+- Dewblackio2 can take or leave whatever he sees fit from this repo.
+- Removed binary as this is not a release. A new binary will be generated with 1.3-RELEASE.
+- [TOLDNT-01] Possible fix for "rogue lines" when pausing and unpausing due to race condition.
+- Individual bug fixes will be in their own branches and merged into this master. 
+```
+
+# ORIGINAL FROM 1.2 BELOW
 
 **- Version 1.2**
 ```markdown
