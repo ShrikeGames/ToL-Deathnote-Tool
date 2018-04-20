@@ -22,6 +22,9 @@
 - Investigate way to prematurely end image processing if it's taking too long and results are clearly not what you want
 - Investigate way to better map colours of an image to ToL colours.
 - Remember what monitor it was last on and open there instead of always opening on monitor 1
+- Refactor code into smaller functions for easier maintenance
+- Factor out common functionality into functions for code re-use
+- Adjust GUI creation to be responsive/flow instead of hard-coded coordinates and sizes
 ```
 
 # ORIGINAL FROM 1.2 BELOW
