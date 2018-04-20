@@ -30,15 +30,15 @@
 
 MsgBox($MB_ICONWARNING, "Warning", "Using this software to draw any form of obscenities or NSFW content on your deathnote, will result in a flag against your Throne of Lies account and may result in a permanent suspension. By using this application, you agree to these terms.")
 
-Global $currentVersion = "1.2"
+Global $currentVersion = "1.3-SNAPSHOT"
 Global $configFile = (@ScriptDir & "\ToLDNConfig.ini")
 
-InetGet("http://raw.githubusercontent.com/dewblackio2/ToL-Deathnote-Tool/master/Version.txt", @ScriptDir & "\Version.txt")
+InetGet("https://raw.githubusercontent.com/ShrikeGames/ToL-Deathnote-Tool/master/Version.txt", @ScriptDir & "\Version.txt")
 $versionCheck = FileReadLine(@ScriptDir & "\Version.txt")
 If $versionCheck <> $currentVersion Then
    If MsgBox(262209, "ToL Deathnote Tool", "Update Available!" & @CRLF & "Current Version: " & $currentVersion & " | Update Version: " & $versionCheck & @CRLF & @CRLF & "Press 'OK' to Download") = 1 Then
 	  FileDelete(@ScriptDir & "\Version.txt")
-	  ShellExecute("http://github.com/dewblackio2/ToL-Deathnote-Tool/archive/master.zip")
+	  ShellExecute("https://github.com/ShrikeGames/ToL-Deathnote-Tool/archive/master.zip")
 	  MsgBox($MB_ICONINFORMATION, "ToL Deathnote Tool", "New version downloaded." & @CRLF & "Please check your browsers download destination folder for the archive file." & @CRLF & @CRLF & "Script will now exit.", 20)
 	  Exit
    EndIf
