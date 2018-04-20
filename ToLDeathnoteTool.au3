@@ -16,23 +16,6 @@
 #include <MsgBoxConstants.au3>
 #include <GDIPlus.au3>
 
-MsgBox($MB_ICONWARNING, "Warning", "Using this software to draw any form of obscenities or NSFW content on your deathnote, will result in a flag against your Throne of Lies account and may result in a permanent suspension. By using this application, you agree to these terms.")
-
-Global $currentVersion = "1.3-SNAPSHOT"
-Global $configFile = (@ScriptDir & "\ToLDNConfig.ini")
-
-InetGet("https://raw.githubusercontent.com/ShrikeGames/ToL-Deathnote-Tool/master/Version.txt", @ScriptDir & "\Version.txt")
-$versionCheck = FileReadLine(@ScriptDir & "\Version.txt")
-If $versionCheck <> $currentVersion Then
-	If MsgBox(262209, "ToL Deathnote Tool", "Update Available!" & @CRLF & "Current Version: " & $currentVersion & " | Update Version: " & $versionCheck & @CRLF & @CRLF & "Press 'OK' to Download") = 1 Then
-		FileDelete(@ScriptDir & "\Version.txt")
-		ShellExecute("https://github.com/ShrikeGames/ToL-Deathnote-Tool/archive/master.zip")
-		MsgBox($MB_ICONINFORMATION, "ToL Deathnote Tool", "New version downloaded." & @CRLF & "Please check your browsers download destination folder for the archive file." & @CRLF & @CRLF & "Script will now exit.", 20)
-		Exit
-	EndIf
-EndIf
-FileDelete(@ScriptDir & "\Version.txt")
-
 ;Initialize Global Variables
 Global $hWin
 Global $aPos
@@ -67,30 +50,94 @@ Global $selections[8] = ["Please Select BLACK for draw color then press F6 to co
 Global $pixelHolder = False
 Global $skipColor = False
 
+;START GUIMsgBox - Shows a message box in the GUI
+Func GUIMsgBox($type, $title, $text)
+	
+	MsgBox($type, $title, $text)
+EndFunc
+;END GUIMsgBox
+
+;TODO remove when added to GUI
+GUIMsgBox($MB_ICONWARNING, "Warning", "Using this software to draw any form of obscenities or NSFW content on your deathnote, will result in a flag against your Throne of Lies account and may result in a permanent suspension. By using this application, you agree to these terms.")
+
+Global $currentVersion = "1.3-SNAPSHOT"
+Global $configFile = (@ScriptDir & "\ToLDNConfig.ini")
+
+InetGet("https://raw.githubusercontent.com/ShrikeGames/ToL-Deathnote-Tool/master/Version.txt", @ScriptDir & "\Version.txt")
+$versionCheck = FileReadLine(@ScriptDir & "\Version.txt")
+If $versionCheck <> $currentVersion Then
+	If GUIMsgBox(262209, "ToL Deathnote Tool", "Update Available!" & @CRLF & "Current Version: " & $currentVersion & " | Update Version: " & $versionCheck & @CRLF & @CRLF & "Press 'OK' to Download") = 1 Then
+		FileDelete(@ScriptDir & "\Version.txt")
+		ShellExecute("https://github.com/ShrikeGames/ToL-Deathnote-Tool/archive/master.zip")
+		GUIMsgBox($MB_ICONINFORMATION, "ToL Deathnote Tool", "New version downloaded." & @CRLF & "Please check your browsers download destination folder for the archive file." & @CRLF & @CRLF & "Script will now exit.", 20)
+		Exit
+	EndIf
+EndIf
+FileDelete(@ScriptDir & "\Version.txt")
+
+;TODO remove this
 ;prevent program from running if main hotkeys are bound to something
 If (Not HotKeySet("{F9}", "Nothing")) Then
-	MsgBox(16, "Error", "Could not register the F9 hotkey.")
+	GUIMsgBox(16, "Error", "Could not register the F9 hotkey.")
 	Exit
 EndIf
 If (Not HotKeySet("{F10}", "Nothing")) Then
-	MsgBox(16, "Error", "Could not register the F10 hotkey.")
+	GUIMsgBox(16, "Error", "Could not register the F10 hotkey.")
 	Exit
 EndIf
 If (Not HotKeySet("{F8}", "Nothing")) Then
-	MsgBox(16, "Error", "Could not register the F8 hotkey.")
+	GUIMsgBox(16, "Error", "Could not register the F8 hotkey.")
 	Exit
 EndIf
 If (Not HotKeySet("{F7}", "Nothing")) Then
-	MsgBox(16, "Error", "Could not register the F7 hotkey.")
+	GUIMsgBox(16, "Error", "Could not register the F7 hotkey.")
 	Exit
 EndIf
 If (Not HotKeySet("{F6}", "Nothing")) Then
-	MsgBox(16, "Error", "Could not register the F6 hotkey.")
+	GUIMsgBox(16, "Error", "Could not register the F6 hotkey.")
 	Exit
 EndIf
 
-;[] Main Settings Window [] (i never want to make a GUI by hand ever again -.-)
-$optGUI = GUICreate("ToL Deathnote Tool v" & $currentVersion, 1550, 731, -1, -1, -1)
+
+$disableWindowBarOptions = -1
+;read the values from the config file if they are there
+$windowPosX = GetConfigValue("Window","windowPosX",-1)
+$windowPosY = GetConfigValue("Window","windowPosY",-1)
+$windowStyle = GetConfigValue("Window","windowStyle",-1)
+$windowTitle = "ToL Deathnote Tool v" & $currentVersion
+
+Func GetConfigValue($category, $propertyKey, $defaultValue)
+	If FileExists($configFile) Then
+		$value = IniRead($configFile, $category, $propertyKey, $defaultValue)
+		return $value
+	EndIf
+EndFunc
+
+Func UpdateConfig()
+	$windowPos = WinGetPos($windowTitle)
+	IniWrite($configFile, "Window", "windowPosX", $windowPos[0])
+	IniWrite($configFile, "Window", "windowPosY", $windowPos[1])
+	
+	If (GUICtrlRead($horizontalRadio) == $GUI_CHECKED) Then
+		IniWrite($configFile, "Settings", "Pattern", "horizontal")
+	ElseIf (GUICtrlRead($verticalRadio) == $GUI_CHECKED) Then
+		IniWrite($configFile, "Settings", "Pattern", "vertical")
+	ElseIf (GUICtrlRead($diagonalRadio) == $GUI_CHECKED) Then
+		IniWrite($configFile, "Settings", "Pattern", "diagonal")
+	ElseIf (GUICtrlRead($rotateRadio) == $GUI_CHECKED) Then
+		IniWrite($configFile, "Settings", "Pattern", "spiral")
+	ElseIf (GUICtrlRead($scrambleRadio) == $GUI_CHECKED) Then
+		IniWrite($configFile, "Settings", "Pattern", "random")
+	EndIf
+	IniWrite($configFile, "Settings", "Speed", GUICtrlRead($speedInput))
+	IniWrite($configFile, "Settings", "BlackThreshold", GUICtrlRead($blackThresh))
+EndFunc   ;==>UpdateConfig
+
+
+;[] Main Settings Window
+
+;default windowsStyle includes a combination of $WS_MINIMIZEBOX, $WS_CAPTION, $WS_POPUP, $WS_SYSMENU styles.
+$optGUI = GUICreate($windowTitle, 1550, 731, $windowPosX, $windowPosY, $disableWindowBarOptions, $windowStyle)
 
 $imageDisplay = GUICtrlCreatePic("", 470, 16, 1065, 599, $WS_BORDER + $SS_CENTERIMAGE)
 ;$donateBtn = GUICtrlCreateButton("♥♥ Donate To Support My Work ♥♥", 480, 640, 500, 35)
@@ -402,7 +449,7 @@ While 1
 		Case $okBtn
 			UpdateConfig()
 			If GUICtrlRead($widthInput) > @DesktopWidth Or GUICtrlRead($heightInput) > @DesktopHeight Then
-				MsgBox($MB_ICONWARNING, "Error", "Image Size Exceeds Desktop Display Size!")
+				GUIMsgBox($MB_ICONWARNING, "Error", "Image Size Exceeds Desktop Display Size!")
 			Else
 				HotKeySet("{F9}")
 				HotKeySet("{F10}")
@@ -766,7 +813,7 @@ Func Draw()
 	MouseMove($x0, $y0 + $height)
 	MouseMove($x0, $y0)
 
-	MsgBox($MB_ICONINFORMATION, "Important Information", "F8 = Pause / Unpause Draw" & @LF & @LF & "Please be sure to pause the drawing if the deathnote is force closed, or if you need to be able to move the mouse!")
+	GUIMsgBox($MB_ICONINFORMATION, "Important Information", "F8 = Pause / Unpause Draw" & @LF & @LF & "Please be sure to pause the drawing if the deathnote is force closed, or if you need to be able to move the mouse!")
 	$stack = CreateStack(1000)
 	For $i = 1 To 7
 		If $foundColors[$i] == True And $useColor[$i] == True Then
@@ -1095,19 +1142,3 @@ Func Quit()
 	UpdateConfig()
 	Exit
 EndFunc   ;==>Quit
-
-Func UpdateConfig()
-	If (GUICtrlRead($horizontalRadio) == $GUI_CHECKED) Then
-		IniWrite($configFile, "Settings", "Pattern", "horizontal")
-	ElseIf (GUICtrlRead($verticalRadio) == $GUI_CHECKED) Then
-		IniWrite($configFile, "Settings", "Pattern", "vertical")
-	ElseIf (GUICtrlRead($diagonalRadio) == $GUI_CHECKED) Then
-		IniWrite($configFile, "Settings", "Pattern", "diagonal")
-	ElseIf (GUICtrlRead($rotateRadio) == $GUI_CHECKED) Then
-		IniWrite($configFile, "Settings", "Pattern", "spiral")
-	ElseIf (GUICtrlRead($scrambleRadio) == $GUI_CHECKED) Then
-		IniWrite($configFile, "Settings", "Pattern", "random")
-	EndIf
-	IniWrite($configFile, "Settings", "Speed", GUICtrlRead($speedInput))
-	IniWrite($configFile, "Settings", "BlackThreshold", GUICtrlRead($blackThresh))
-EndFunc   ;==>UpdateConfig
