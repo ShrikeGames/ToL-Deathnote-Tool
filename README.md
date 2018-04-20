@@ -14,6 +14,7 @@
 - Added wrapper function for the alert messages so it can be replaced later with something else easily. 
 - Refactored creation of the main GUI a bit so it references config values. 
 - GUI will now remember its position in the config file and restore it next time you launch the program.
+- [TOLDNT-02] Another fix similar to the rogue line issue. If a use paused while mouse was up (to move to another spot without drawing) then unpaused it was always putting the mouse down, causing it to draw a connected line when it shouldn't. Now remembers the state of the mouse and position of the mouse before hand, and restores it when unpausing.
 ```
 
 # Planned Features (For this Fork)
