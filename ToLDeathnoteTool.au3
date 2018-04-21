@@ -131,7 +131,14 @@ Func UpdateConfig()
 		IniWrite($configFile, "Settings", "Pattern", "random")
 	EndIf
 	IniWrite($configFile, "Settings", "Speed", GUICtrlRead($speedInput))
-	IniWrite($configFile, "Settings", "BlackThreshold", GUICtrlRead($blackThresh))
+	IniWrite($configFile, "Settings", "blackThresh", GUICtrlRead($blackThresh))
+	IniWrite($configFile, "Settings", "yellowThresh", GUICtrlRead($yellowThresh))
+	IniWrite($configFile, "Settings", "blueThresh", GUICtrlRead($blueThresh))
+	IniWrite($configFile, "Settings", "pinkThresh", GUICtrlRead($pinkThresh))
+	IniWrite($configFile, "Settings", "whiteThresh", GUICtrlRead($whiteThresh))
+	IniWrite($configFile, "Settings", "redThresh", GUICtrlRead($redThresh))
+	IniWrite($configFile, "Settings", "greenThresh", GUICtrlRead($greenThresh))
+	IniWrite($configFile, "Settings", "purpleThresh", GUICtrlRead($purpleThresh))
 EndFunc   ;==>UpdateConfig
 
 
@@ -334,25 +341,25 @@ $blackThresh = AddGUINumberField("Black Threshold (0-255):","230",False)
 $colorWarningLabel = AddGUILabelField("Using Colors Takes Longer!")
 
 $yellowDet = AddGUIColorCheckboxField("Enable Yellow", False, 0xc8b800)
-$yellowThresh = AddGUINumberField("Yellow Threshold (0-255):","230",False)
+$yellowThresh = AddGUINumberField("Yellow Threshold (0-255):","150",False)
 
 $blueDet = AddGUIColorCheckboxField("Enable Blue", False, 0x007cc3)
-$blueThresh = AddGUINumberField("Blue Threshold (0-255):","230",False)
+$blueThresh = AddGUINumberField("Blue Threshold (0-255):","150",False)
 
 $pinkDet = AddGUIColorCheckboxField("Enable Pink", False, 0xe173df)
-$pinkThresh = AddGUINumberField("Pink Threshold (0-255):","230",False)
+$pinkThresh = AddGUINumberField("Pink Threshold (0-255):","150",False)
 
 $whiteDet = AddGUIColorCheckboxField("Enable White", False, 0xe1e1e1)
-$whiteThresh = AddGUINumberField("White Threshold (0-255):","230",False)
+$whiteThresh = AddGUINumberField("White Threshold (0-255):","150",False)
 
 $redDet = AddGUIColorCheckboxField("Enable Red", False, 0x960000)
-$redThresh = AddGUINumberField("Red Threshold (0-255):","230",False)
+$redThresh = AddGUINumberField("Red Threshold (0-255):","150",False)
 
 $greenDet = AddGUIColorCheckboxField("Enable Green", False, 0x009600)
-$greenThresh = AddGUINumberField("Green Threshold (0-255):","230",False)
+$greenThresh = AddGUINumberField("Green Threshold (0-255):","150",False)
 
 $purpleDet = AddGUIColorCheckboxField("Enable Purple", False, 0x790098)
-$purpleThresh = AddGUINumberField("Purple Threshold (0-255):","230",False)
+$purpleThresh = AddGUINumberField("Purple Threshold (0-255):","150",False)
 
 ;END COLOR SETTINGS
 
@@ -387,8 +394,23 @@ If FileExists($configFile) Then
 	EndIf
 	$speedSelect = IniRead($configFile, "Settings", "Speed", "5")
 	GUICtrlSetData($speedInput, $speedSelect)
-	$blackSelect = IniRead($configFile, "Settings", "BlackThreshold", "230")
+	$blackSelect = IniRead($configFile, "Settings", "blackThresh", "230")
+	$yellowSelect = IniRead($configFile, "Settings", "yellowThresh", "150")
+	$blueSelect = IniRead($configFile, "Settings", "blueThresh", "150")
+	$pinkSelect = IniRead($configFile, "Settings", "pinkThresh", "150")
+	$whiteSelect = IniRead($configFile, "Settings", "whiteThresh", "150")
+	$redSelect = IniRead($configFile, "Settings", "redThresh", "150")
+	$greenSelect = IniRead($configFile, "Settings", "greenThresh", "150")
+	$purpleSelect = IniRead($configFile, "Settings", "purpleThresh", "150")
+	
 	GUICtrlSetData($blackThresh, $blackSelect)
+	GUICtrlSetData($yellowThresh, $yellowSelect)
+	GUICtrlSetData($blueThresh, $blueSelect)
+	GUICtrlSetData($pinkThresh, $pinkSelect)
+	GUICtrlSetData($whiteThresh, $whiteSelect)
+	GUICtrlSetData($redThresh, $redSelect)
+	GUICtrlSetData($greenThresh, $greenSelect)
+	GUICtrlSetData($purpleThresh, $purpleSelect)
 EndIf
 
 ;Main Gui Control Messages
