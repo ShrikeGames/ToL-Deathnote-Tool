@@ -17,6 +17,8 @@
 - [TOLDNT-02] Another fix similar to the rogue line issue. If a use paused while mouse was up (to move to another spot without drawing) then unpaused it was always putting the mouse down, causing it to draw a connected line when it shouldn't. Now remembers the state of the mouse and position of the mouse before hand, and restores it when unpausing.
 - GUI updated. Stays the same size, keeping the preview open if you want it even after processing. GUI is defined in a more flexible way so they (mostly) auto-position.
 - The program will now remember all of the color thresholds you input, not just black.
+- Added experimental skipping over the background color. Provide the RGB values and if a color matches perfectly it'll skip it during processing. You can change the tolerance by adding a "bgTolerance" value to the config.
+- You can set "debug=True" in the config to know the color of anything you click on.
 ```
 
 # Planned Features (For this Fork)

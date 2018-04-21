@@ -106,7 +106,8 @@ $windowPosX = GetConfigValue("Window","windowPosX",-1)
 $windowPosY = GetConfigValue("Window","windowPosY",-1)
 $windowStyle = GetConfigValue("Window","windowStyle",-1)
 $windowTitle = "ToL Deathnote Tool v" & $currentVersion
-
+$bgTolerance = GetConfigValue("Settings","bgTolerance",0)
+$debug = GetConfigValue("Settings","debug",False)
 Func GetConfigValue($category, $propertyKey, $defaultValue)
 	If FileExists($configFile) Then
 		$value = IniRead($configFile, $category, $propertyKey, $defaultValue)
@@ -164,6 +165,25 @@ Func AddGUINumberField($label, $defaultValue, $disabled)
 	$top = $flexY
 	$flexY += $fieldHeight+$padding
 	$newField = GUICtrlCreateInput($defaultValue, $left, $top, ($guiWidth/4) - ($padding *4), $fieldHeight, $ES_NUMBER)
+	If $disabled Then
+		GUICtrlSetState(-1, $GUI_DISABLE)
+	EndIf
+	
+	GUICtrlSetFont(-1, 10)
+	GUICtrlSetResizing(-1, $GUI_DOCKALL)
+	return $newField
+EndFunc
+
+Func AddGUITextField($label, $defaultValue, $disabled)
+	
+	GUICtrlCreateLabel($label, $flexX, $flexY, $guiWidth/4, $fieldHeight)
+	GUICtrlSetFont(-1, 10)
+	GUICtrlSetResizing(-1, $GUI_DOCKALL)
+	
+	$left = $flexX+($guiWidth/4)
+	$top = $flexY
+	$flexY += $fieldHeight+$padding
+	$newField = GUICtrlCreateInput($defaultValue, $left, $top, ($guiWidth/4) - ($padding *4), $fieldHeight)
 	If $disabled Then
 		GUICtrlSetState(-1, $GUI_DISABLE)
 	EndIf
@@ -330,7 +350,7 @@ $flexX = ($guiWidth/2) + ($padding)
 $colorSettingsLeft = $flexX 
 $colorSettingsTop = $bannerSettingsTop  + $bannerSettingsHeight + $padding * 2
 $colorSettingsWidth = ($guiWidth / 2 ) - ($padding *2)
-$colorSettingsHeight = $guiHeight - $bannerSettingsHeight -  ($padding *8)
+$colorSettingsHeight = $guiHeight - $bannerSettingsHeight -  ($padding *5)
 
 $flexY = $colorSettingsTop
 GUICtrlCreateGroup("Color Settings", $colorSettingsLeft, $colorSettingsTop, $colorSettingsWidth, $colorSettingsHeight, BitOR($GUI_SS_DEFAULT_GROUP, $BS_CENTER)) 
@@ -360,6 +380,10 @@ $greenThresh = AddGUINumberField("Green Threshold (0-255):","150",False)
 
 $purpleDet = AddGUIColorCheckboxField("Enable Purple", False, 0x790098)
 $purpleThresh = AddGUINumberField("Purple Threshold (0-255):","150",False)
+
+$backgroundR = AddGUINumberField("Background Red (0-255):",255,False)
+$backgroundG = AddGUINumberField("Background Blue (0-255):",255,False)
+$backgroundB = AddGUINumberField("Background Green (0-255):",255,False)
 
 ;END COLOR SETTINGS
 
@@ -415,6 +439,14 @@ EndIf
 
 ;Main Gui Control Messages
 While 1
+	If $debug == True And _IsPressed("01") Then
+		$testpos = MouseGetPos()
+		$color = PixelGetColor($testpos[0],$testpos[1])
+		$red = _ColorGetRed($color)
+		$green = _ColorGetGreen($color)
+		$blue = _ColorGetBlue($color)
+		TrayTip("Color RGB:", $color&" "&$red&", "&$green&", "&$blue&" br="&GUICtrlRead($backgroundR)&" "&DiffIsWithin($red,GUICtrlRead($backgroundR),$bgTolerance), 20)
+	EndIf
 	If $drawFrame == True Then
 		Sleep(10)
 		$aMouse = MouseGetPos()
@@ -621,7 +653,10 @@ Func _GuiHole($h_win, $i_x, $i_y, $i_sizew, $i_sizeh, $widtht, $heightt)
 	_WinAPI_SetWindowRgn($h_win, $combined_rgn)
 
 EndFunc   ;==>_GuiHole
-
+Func DiffIsWithin($first,$second,$allowedDifference)
+	$diff=Abs($second-$first)
+	return $diff<=$allowedDifference
+EndFunc
 ;Main Function to process the image when apply is pressed
 Func ProcessImage()
 	$dc = _WinAPI_GetDC($GUI)
@@ -641,6 +676,7 @@ Func ProcessImage()
 			$checkJustBlack = False
 		EndIf
 	Next
+	
 	For $y = 0 To ($height - 1)
 		For $x = 0 To ($width - 1)
 			$index = ($y * $width) + $x
@@ -649,35 +685,41 @@ Func ProcessImage()
 			$red = _ColorGetRed($color)
 			$green = _ColorGetGreen($color)
 			$blue = _ColorGetBlue($color)
-			$shade = ($red + $green + $blue) / 3
-
-			If $checkJustBlack == False Then
-				$colorArray = CompareColor($red, $green, $blue)
-				If ($shade > $thresholds[$colorArray[1]]) Then
-					$colorArray[0] = 0xB9B9B9
-					$codes[$x][$y] = 0
-					$pixels[$x][$y] = 0
-				Else
-					$codes[$x][$y] = GetCode($colorArray[0])
-					If ($foundColors[$codes[$x][$y] - 1] == False) And ($useColor[$codes[$x][$y] - 1] == True) Then
-						$foundColors[$codes[$x][$y] - 1] = True
-					EndIf
-					$pixels[$x][$y] = 1
-				EndIf
+			
+			If $bgTolerance>=0 And DiffIsWithin($red,GUICtrlRead($backgroundR),$bgTolerance) And DiffIsWithin($green,GUICtrlRead($backgroundG),$bgTolerance) And DiffIsWithin($blue,GUICtrlRead($backgroundB),$bgTolerance) Then
+				;TrayTip("DEBUG", $color&" "&$red&","&$green&","&$blue&" vs "&$backgroundR&","&$backgroundG&","&$backgroundB, 1)
+				ContinueLoop
 			Else
-				If ($shade > $thresholds[0]) Then
-					$colorArray[0] = 0xB9B9B9
-					$codes[$x][$y] = 0
-					$pixels[$x][$y] = 0
-				Else
-					$colorArray[0] = 0
-					$foundColors[0] = True
-					$codes[$x][$y] = 1
-					$pixels[$x][$y] = 1
-				EndIf
-			EndIf
+				$shade = ($red + $green + $blue) / 3
 
-			DllStructSetData($bits, 1, $colorArray[0], $index)
+				If $checkJustBlack == False Then
+					$colorArray = CompareColor($red, $green, $blue)
+					If ($shade > $thresholds[$colorArray[1]]) Then
+						$colorArray[0] = 0xB9B9B9
+						$codes[$x][$y] = 0
+						$pixels[$x][$y] = 0
+					Else
+						$codes[$x][$y] = GetCode($colorArray[0])
+						If ($foundColors[$codes[$x][$y] - 1] == False) And ($useColor[$codes[$x][$y] - 1] == True) Then
+							$foundColors[$codes[$x][$y] - 1] = True
+						EndIf
+						$pixels[$x][$y] = 1
+					EndIf
+				Else
+					If ($shade > $thresholds[0]) Then
+						$colorArray[0] = 0xB9B9B9
+						$codes[$x][$y] = 0
+						$pixels[$x][$y] = 0
+					Else
+						$colorArray[0] = 0
+						$foundColors[0] = True
+						$codes[$x][$y] = 1
+						$pixels[$x][$y] = 1
+					EndIf
+				EndIf
+				DllStructSetData($bits, 1, $colorArray[0], $index)
+			EndIf
+			
 		Next
 
 		DllCall("gdi32", "int", "SetBitmapBits", "ptr", $bitmap, "int", ($width * $height * 4), "ptr", DllStructGetPtr($bits))
