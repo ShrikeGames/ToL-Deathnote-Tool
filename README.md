@@ -15,6 +15,7 @@
 - Refactored creation of the main GUI a bit so it references config values. 
 - GUI will now remember its position in the config file and restore it next time you launch the program.
 - [TOLDNT-02] Another fix similar to the rogue line issue. If a use paused while mouse was up (to move to another spot without drawing) then unpaused it was always putting the mouse down, causing it to draw a connected line when it shouldn't. Now remembers the state of the mouse and position of the mouse before hand, and restores it when unpausing.
+- GUI updated. Stays the same size, keeping the preview open if you want it even after processing. GUI is defined in a more flexible way so they (mostly) auto-position.
 ```
 
 # Planned Features (For this Fork)
@@ -30,6 +31,7 @@
 - Refactor code into smaller functions for easier maintenance
 - Factor out common functionality into functions for code re-use
 - Adjust GUI creation to be responsive/flow instead of hard-coded coordinates and sizes
+- Investigate integration with the ToL fill tool to speed up the drawing process
 ```
 
 # ORIGINAL FROM 1.2 BELOW

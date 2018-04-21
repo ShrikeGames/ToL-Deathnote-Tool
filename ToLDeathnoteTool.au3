@@ -59,7 +59,7 @@ EndFunc
 ;END GUIMsgBox
 
 ;TODO remove when added to GUI
-GUIMsgBox($MB_ICONWARNING, "Warning", "Using this software to draw any form of obscenities or NSFW content on your deathnote, will result in a flag against your Throne of Lies account and may result in a permanent suspension. By using this application, you agree to these terms.")
+;GUIMsgBox($MB_ICONWARNING, "Warning", "Using this software to draw any form of obscenities or NSFW content on your deathnote, will result in a flag against your Throne of Lies account and may result in a permanent suspension. By using this application, you agree to these terms.")
 
 Global $currentVersion = "1.3-SNAPSHOT"
 Global $configFile = (@ScriptDir & "\ToLDNConfig.ini")
@@ -116,7 +116,7 @@ EndFunc
 
 Func UpdateConfig()
 	$windowPos = WinGetPos($windowTitle)
-	IniWrite($configFile, "Window", "windowPosX", $windowPos[0])
+	IniWrite($configFile, "Window", "windowPosX", $windowPos[0] - $guiWidth)
 	IniWrite($configFile, "Window", "windowPosY", $windowPos[1])
 	
 	If (GUICtrlRead($horizontalRadio) == $GUI_CHECKED) Then
@@ -138,215 +138,238 @@ EndFunc   ;==>UpdateConfig
 ;[] Main Settings Window
 
 ;default windowsStyle includes a combination of $WS_MINIMIZEBOX, $WS_CAPTION, $WS_POPUP, $WS_SYSMENU styles.
-$optGUI = GUICreate($windowTitle, 1550, 731, $windowPosX, $windowPosY, $disableWindowBarOptions, $windowStyle)
+Global $guiWidth = 800
+Global $guiHeight = 750
 
-$imageDisplay = GUICtrlCreatePic("", 470, 16, 1065, 599, $WS_BORDER + $SS_CENTERIMAGE)
-;$donateBtn = GUICtrlCreateButton("♥♥ Donate To Support My Work ♥♥", 480, 640, 500, 35)
-$donateBtn = GUICtrlCreateButton("♥♥ Donate To Support My Work ♥♥", 16, 680, 435, 35)
-GUICtrlSetFont(-1, 12)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
+;START GUI GENERATION
+Global $padding = 8
+Global $flexX = $padding * 3
+Global $flexY = $padding * 3
+Global $fieldHeight = 20;
 
-GUICtrlCreateGroup("Image Settings", 16, 16, 185, 185, BitOR($GUI_SS_DEFAULT_GROUP, $BS_CENTER)) ;width height and option to show picture size around mouse once processing done
-GUICtrlSetFont(-1, 10)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateLabel("Width (px):", 24, 45, 80, 25)
-GUICtrlSetFont(-1, 10)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$widthInput = GUICtrlCreateInput("0", 120, 45, 50, 20, $ES_NUMBER)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlSetState(-1, $GUI_DISABLE)
-GUICtrlCreateLabel("Height (px):", 24, 85, 80, 25)
-GUICtrlSetFont(-1, 10)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$heightInput = GUICtrlCreateInput("0", 120, 85, 50, 20, $ES_NUMBER)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlSetState(-1, $GUI_DISABLE)
-$showRect = GUICtrlCreateCheckbox("Draw Image Size? ", 24, 125, 135, 25, BitOR($GUI_SS_DEFAULT_CHECKBOX, $BS_RIGHTBUTTON))
-GUICtrlSetFont($showRect, 10)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlSetState(-1, $GUI_DISABLE)
-GUICtrlCreateLabel("(Enables After Pressing Apply)", 24, 155, 170, 30)
-GUICtrlSetColor(-1, 0x960000)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateGroup("", -99, -99, 1, 1)
+Func AddGUINumberField($label, $defaultValue, $disabled)
+	
+	GUICtrlCreateLabel($label, $flexX, $flexY, $guiWidth/4, $fieldHeight)
+	GUICtrlSetFont(-1, 10)
+	GUICtrlSetResizing(-1, $GUI_DOCKALL)
+	
+	$left = $flexX+($guiWidth/4)
+	$top = $flexY
+	$flexY += $fieldHeight+$padding
+	$newField = GUICtrlCreateInput($defaultValue, $left, $top, ($guiWidth/4) - ($padding *4), $fieldHeight, $ES_NUMBER)
+	If $disabled Then
+		GUICtrlSetState(-1, $GUI_DISABLE)
+	EndIf
+	
+	GUICtrlSetFont(-1, 10)
+	GUICtrlSetResizing(-1, $GUI_DOCKALL)
+	return $newField
+EndFunc
 
-GUICtrlCreateGroup("Drawing Settings", 16, 224, 185, 249, BitOR($GUI_SS_DEFAULT_GROUP, $BS_CENTER)) ;Drawing pattern and mouse speed settings
-GUICtrlSetFont(-1, 10)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateLabel("Pattern:", 24, 240, 135, 20)
-GUICtrlSetFont(-1, 10, 400, 4)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$horizontalRadio = GUICtrlCreateRadio(" Horizontal", 24, 255, 135, 25)
-GUICtrlSetFont(-1, 10)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$verticalRadio = GUICtrlCreateRadio(" Vertical", 24, 280, 135, 25)
-GUICtrlSetFont(-1, 10)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$diagonalRadio = GUICtrlCreateRadio(" Diagonal", 24, 305, 135, 25)
-GUICtrlSetFont(-1, 10)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$rotateRadio = GUICtrlCreateRadio(" Spiral", 24, 330, 135, 25)
-GUICtrlSetFont(-1, 10)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$scrambleRadio = GUICtrlCreateRadio(" Random", 24, 355, 135, 25)
-GUICtrlSetFont(-1, 10)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
+Func AddGUICheckboxField($label, $disabled)
+	
+	$left = $flexX
+	$top = $flexY
+	$newField = GUICtrlCreateCheckbox($label, $left, $top, ($guiWidth/2) - ($padding *4), $fieldHeight, BitOR($GUI_SS_DEFAULT_CHECKBOX, $BS_RIGHTBUTTON))
+	
+	$flexY += $fieldHeight+$padding
+	If $disabled Then
+		GUICtrlSetState(-1, $GUI_DISABLE)
+	EndIf
+	GUICtrlSetFont(-1, 10)
+	GUICtrlSetResizing(-1, $GUI_DOCKALL)
+	return $newField
+EndFunc
+
+Func AddGUIColorCheckboxField($label, $disabled, $color)
+	
+	$left = $flexX
+	$top = $flexY
+	GUICtrlCreateGraphic($left, $top, 24, 24)
+	GUICtrlSetBkColor(-1, $color)
+	GUICtrlSetResizing (-1, $GUI_DOCKALL)
+	$left += 24 + $padding
+	$newField = GUICtrlCreateCheckbox($label, $left, $top, ($guiWidth/2) - ($padding *5) - 24, $fieldHeight, BitOR($GUI_SS_DEFAULT_CHECKBOX, $BS_RIGHTBUTTON))
+	
+	$flexY += $fieldHeight+$padding
+	If $disabled Then
+		GUICtrlSetState(-1, $GUI_DISABLE)
+	EndIf
+	GUICtrlSetFont(-1, 10)
+	GUICtrlSetResizing(-1, $GUI_DOCKALL)
+	return $newField
+EndFunc
+
+
+Func AddGUILabelField($label)
+	
+	$left = $flexX
+	$top = $flexY
+	$newField = GUICtrlCreateLabel($label, $left, $top,  ($guiWidth/2) - ($padding *4), $fieldHeight)
+	
+	$flexY += $fieldHeight+$padding
+	GUICtrlSetColor(-1, 0x960000)
+	GUICtrlSetFont(-1, 10)
+	GUICtrlSetResizing(-1, $GUI_DOCKALL)
+	return $newField
+EndFunc
+
+Func AddGUIRadioField($label)
+	
+	$left = $flexX
+	$top = $flexY
+	$newField = GUICtrlCreateRadio($label, $left, $top,  ($guiWidth/2) - ($padding *4), $fieldHeight)
+	
+	$flexY += $fieldHeight+$padding
+	GUICtrlSetFont(-1, 10)
+	GUICtrlSetResizing(-1, $GUI_DOCKALL)
+	return $newField
+EndFunc
+
+Func AddGUIButton($label)
+	
+	$left = $flexX
+	$top = $flexY
+	$newField = GUICtrlCreateButton($label, $left, $top,  ($guiWidth/2) - ($padding *4), $fieldHeight)
+	
+	GUICtrlSetFont(-1, 10)
+	GUICtrlSetResizing(-1, $GUI_DOCKALL)
+	return $newField
+EndFunc
+$optGUI = GUICreate($windowTitle, $guiWidth*2, $guiHeight, $windowPosX+$guiWidth, $windowPosY, $disableWindowBarOptions, $windowStyle)
+
+;BANNER SETTINGS
+$bannerSettingsLeft = $padding * 2
+$bannerSettingsTop = $padding * 2
+$bannerSettingsWidth =  ($guiWidth) - ($padding *3)
+$bannerSettingsHeight = 150 + ( $padding *2 )
+GUICtrlCreateGroup("Throne of Lies Deathnote Tool", $bannerSettingsLeft, $bannerSettingsTop, $bannerSettingsWidth, $bannerSettingsHeight, BitOR($GUI_SS_DEFAULT_GROUP, $BS_CENTER)) 
+$flexY += $padding
+AddGUILabelField("Created By: Dewblackio2")
+AddGUILabelField("Support By: Matt Thomas @ShrikeGames")
+
+$donateBtn = AddGUIButton("♥♥ Donate To Dewblackio2 ♥♥")
+$flexY += $fieldHeight+$padding
+$flexX = ($padding *3)
+$openBtn = AddGUIButton("Open") ;open image, all buttons disabled until image loaded
+$flexX = $bannerSettingsLeft + ($bannerSettingsWidth /2) + ($padding *2)
+$okBtn = AddGUIButton("Apply") ;Apply
+$flexX = ($padding *3)
+$flexY += $fieldHeight+$padding
+$resetBtn = AddGUIButton("Reset") ;Reset
+$flexX = $bannerSettingsLeft + ($bannerSettingsWidth /2) + ($padding *2)
+$exitBtn = AddGUIButton("Exit") ;Exit
+$flexX = ($padding *3)
+$flexY += $fieldHeight+$padding
+;BANNER SETTINGS
+
+
+;IMAGE SETTINGS
+
+$imageSettingsLeft = $padding * 2
+$imageSettingsTop = $bannerSettingsTop  + $bannerSettingsHeight + $padding * 2
+$imageSettingsWidth =  ($guiWidth/2) - ($padding *2)
+$imageSettingsHeight = 130
+$flexY = $imageSettingsTop
+GUICtrlCreateGroup("Image Settings", $imageSettingsLeft, $imageSettingsTop, $imageSettingsWidth, $imageSettingsHeight, BitOR($GUI_SS_DEFAULT_GROUP, $BS_CENTER)) 
+$flexY += $padding * 2
+$widthInput = AddGUINumberField("Width (px):","0",True)
+$heightInput = AddGUINumberField("Height (px):","0",True)
+$showRect = AddGUICheckboxField("Draw Image Size? ", True)
+$showRectLabel = AddGUILabelField("(Enables After Pressing Apply)")
+
+;ENDIMAGE SETTINGS
+
+;DRAWING SETTINGS
+$drawingSettingsLeft = $padding * 2
+$drawingSettingsTop = $imageSettingsTop  + $imageSettingsHeight + $padding * 2
+$drawingSettingsWidth =  ($guiWidth/2) - ($padding *2)
+$drawingSettingsHeight = 210
+
+$flexY = $drawingSettingsTop
+GUICtrlCreateGroup("Drawing Settings", $drawingSettingsLeft, $drawingSettingsTop, $drawingSettingsWidth, $drawingSettingsHeight, BitOR($GUI_SS_DEFAULT_GROUP, $BS_CENTER)) 
+$flexY += $padding * 2
+$patternLabel = AddGUILabelField("Pattern:")
+
+$horizontalRadio = AddGUIRadioField(" Horizontal")
+$verticalRadio = AddGUIRadioField(" Vertical")
+$diagonalRadio = AddGUIRadioField(" Diagonal")
+$rotateRadio = AddGUIRadioField(" Spiral")
+$scrambleRadio = AddGUIRadioField(" Random")
 GUICtrlSetState($diagonalRadio, $GUI_CHECKED)
-GUICtrlCreateLabel("Speed:", 24, 380, 135, 20)
-GUICtrlSetFont(-1, 10, 400, 4)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateLabel("Mouse speed:", 24, 405, 90, 25)
-GUICtrlSetFont(-1, 10)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$speedInput = GUICtrlCreateInput("5", 120, 405, 50, 20, $ES_NUMBER)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateLabel("0 = Slow and Accurate", 24, 430, 135, 15)
-GUICtrlSetFont(-1, 10)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateLabel("100 = Fast but Sloppy", 24, 450, 135, 20)
-GUICtrlSetFont(-1, 10)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateGroup("", -99, -99, 1, 1)
+$speedInput = AddGUINumberField("Mouse speed (0=slow, 100=fast):","5",False)
+$flexX = ($padding * 3)
+; END DRAWING SETTINGS
 
-GUICtrlCreateGroup("Color Settings", 232, 16, 217, 567, BitOR($GUI_SS_DEFAULT_GROUP, $BS_CENTER)) ;color settings and threshold modification
-GUICtrlSetFont(-1, 10)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateGroup("Black", 232, 40, 217, 49)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateGraphic(245, 60, 24, 24)
-GUICtrlSetBkColor(-1, 0x000000)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateLabel("Threshold (0-255): ", 284, 62, 90, 20)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$blackThresh = GUICtrlCreateInput("230", 375, 59, 49, 24, $ES_NUMBER)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateGroup("", -99, -99, 1, 1)
-GUICtrlCreateLabel("Using Colors Takes Longer!", 240, 96, 197, 20)
-GUICtrlSetFont(-1, 10, 800, 4, "MS Sans Serif")
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateGroup("Yellow", 232, 120, 217, 73)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateGraphic(245, 140, 24, 24)
-GUICtrlSetBkColor(-1, 0xc8b800)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$yellowDet = GUICtrlCreateCheckbox("Enabled", 288, 168, 60, 17, BitOR($GUI_SS_DEFAULT_CHECKBOX, $BS_RIGHTBUTTON))
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateLabel("Threshold (0-255): ", 284, 142, 90, 20)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$yellowThresh = GUICtrlCreateInput("255", 375, 139, 49, 24, $ES_NUMBER)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateGroup("", -99, -99, 1, 1)
-GUICtrlCreateGroup("Blue", 232, 185, 217, 73)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateGraphic(245, 205, 24, 24)
-GUICtrlSetBkColor(-1, 0x007cc3)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$blueDet = GUICtrlCreateCheckbox("Enabled", 288, 233, 60, 17, BitOR($GUI_SS_DEFAULT_CHECKBOX, $BS_RIGHTBUTTON))
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateLabel("Threshold (0-255): ", 284, 207, 90, 20)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$blueThresh = GUICtrlCreateInput("255", 375, 204, 49, 24, $ES_NUMBER)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateGroup("", -99, -99, 1, 1)
-GUICtrlCreateGroup("Pink", 232, 250, 217, 73)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateGraphic(245, 270, 24, 24)
-GUICtrlSetBkColor(-1, 0xe173df)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$pinkDet = GUICtrlCreateCheckbox("Enabled", 288, 298, 60, 17, BitOR($GUI_SS_DEFAULT_CHECKBOX, $BS_RIGHTBUTTON))
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateLabel("Threshold (0-255): ", 284, 272, 90, 20)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$pinkThresh = GUICtrlCreateInput("255", 375, 269, 49, 24, $ES_NUMBER)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateGroup("", -99, -99, 1, 1)
-GUICtrlCreateGroup("White", 232, 315, 217, 73)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateGraphic(245, 335, 24, 24)
-GUICtrlSetBkColor(-1, 0xe1e1e1)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$whiteDet = GUICtrlCreateCheckbox("Enabled", 288, 363, 60, 17, BitOR($GUI_SS_DEFAULT_CHECKBOX, $BS_RIGHTBUTTON))
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateLabel("Threshold (0-255): ", 284, 337, 90, 20)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$whiteThresh = GUICtrlCreateInput("255", 375, 334, 49, 24, $ES_NUMBER)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateGroup("", -99, -99, 1, 1)
-GUICtrlCreateGroup("Red", 232, 380, 217, 73)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateGraphic(245, 400, 24, 24)
-GUICtrlSetBkColor(-1, 0x960000)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$redDet = GUICtrlCreateCheckbox("Enabled", 288, 428, 60, 17, BitOR($GUI_SS_DEFAULT_CHECKBOX, $BS_RIGHTBUTTON))
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateLabel("Threshold (0-255): ", 284, 402, 90, 20)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$redThresh = GUICtrlCreateInput("255", 375, 399, 49, 24, $ES_NUMBER)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateGroup("", -99, -99, 1, 1)
-GUICtrlCreateGroup("Green", 232, 445, 217, 73)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateGraphic(245, 465, 24, 24)
-GUICtrlSetBkColor(-1, 0x009600)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$greenDet = GUICtrlCreateCheckbox("Enabled", 288, 493, 60, 17, BitOR($GUI_SS_DEFAULT_CHECKBOX, $BS_RIGHTBUTTON))
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateLabel("Threshold (0-255): ", 284, 467, 90, 20)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$greenThresh = GUICtrlCreateInput("255", 375, 464, 49, 24, $ES_NUMBER)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateGroup("", -99, -99, 1, 1)
-GUICtrlCreateGroup("Purple", 232, 510, 217, 73)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateGraphic(245, 530, 24, 24)
-GUICtrlSetBkColor(-1, 0x790098)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$purpleDet = GUICtrlCreateCheckbox("Enabled", 288, 558, 60, 17, BitOR($GUI_SS_DEFAULT_CHECKBOX, $BS_RIGHTBUTTON))
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateLabel("Threshold (0-255): ", 284, 532, 90, 20)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$purpleThresh = GUICtrlCreateInput("255", 375, 529, 49, 24, $ES_NUMBER)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateGroup("", -99, -99, 1, 1)
-GUICtrlCreateGroup("", -99, -99, 1, 1)
+;KEYBINDS
+$keybindsLeft = $padding * 2
+$keybindsTop = $drawingSettingsTop  + $drawingSettingsHeight + $padding * 2
+$keybindsWidth =  ($guiWidth/2) - ($padding *2)
+$keybindsHeight = 150
 
-GUICtrlCreateGroup("Keybinds", 16, 488, 201, 137, BitOR($GUI_SS_DEFAULT_GROUP, $BS_CENTER)) ;Keybinds and credits
-GUICtrlSetFont(-1, 10)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateLabel("F9 = Start! and Lock Pos", 24, 504, 147, 20)
-GUICtrlSetFont(-1, 10)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateLabel("F6 = Draw Current Color", 24, 528, 143, 20)
-GUICtrlSetFont(-1, 10)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateLabel("F7 = Skip Current Color", 24, 552, 139, 20)
-GUICtrlSetFont(-1, 10)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateLabel("F10 = Exit Program", 24, 600, 115, 20)
-GUICtrlSetFont(-1, 10)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateLabel("F8 = Pause / Resume Draw", 24, 576, 166, 20)
-GUICtrlSetFont(-1, 10)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateGroup("", -99, -99, 1, 1)
+$flexY = $keybindsTop
+GUICtrlCreateGroup("Keybinds", $keybindsLeft, $keybindsTop, $keybindsWidth, $keybindsHeight, BitOR($GUI_SS_DEFAULT_GROUP, $BS_CENTER)) 
+$flexY += $padding * 2
+AddGUILabelField("F9 = Start! and Lock Pos")
+AddGUILabelField("F6 = Draw Current Color")
+AddGUILabelField("F7 = Skip Current Color")
+AddGUILabelField("F8 = Pause / Resume Draw")
+AddGUILabelField("F10 = Exit Program")
 
-GUICtrlCreateLabel("Throne of Lies Deathnote Tool", 232, 584, 218, 21)
-GUICtrlSetFont(-1, 12, 400, 0, "Britannic Bold")
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-GUICtrlCreateLabel("Created By: Dewblackio2", 248, 608, 181, 21)
-GUICtrlSetFont(-1, 12, 400, 0, "Britannic Bold")
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
+;END KEYBINDS
 
-$openBtn = GUICtrlCreateButton("Open", 16, 640, 99, 33) ;open image, all buttons disabled until image loaded
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$okBtn = GUICtrlCreateButton("Apply", 128, 640, 99, 33) ;Apply
-GUICtrlSetState(-1, $GUI_DISABLE)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$resetBtn = GUICtrlCreateButton("Reset", 240, 640, 99, 33) ;Reset
-GUICtrlSetState(-1, $GUI_DISABLE)
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
-$exitBtn = GUICtrlCreateButton("Exit", 352, 640, 99, 33) ;Exit
-GUICtrlSetResizing(-1, $GUI_DOCKALL)
+;COLOR SETTINGS
+$flexX = ($guiWidth/2) + ($padding)
+$colorSettingsLeft = $flexX 
+$colorSettingsTop = $bannerSettingsTop  + $bannerSettingsHeight + $padding * 2
+$colorSettingsWidth = ($guiWidth / 2 ) - ($padding *2)
+$colorSettingsHeight = $guiHeight - $bannerSettingsHeight -  ($padding *8)
+
+$flexY = $colorSettingsTop
+GUICtrlCreateGroup("Color Settings", $colorSettingsLeft, $colorSettingsTop, $colorSettingsWidth, $colorSettingsHeight, BitOR($GUI_SS_DEFAULT_GROUP, $BS_CENTER)) 
+$flexY += $padding * 2
+$flexX += $padding
+
+$blackThresh = AddGUINumberField("Black Threshold (0-255):","230",False)
+$colorWarningLabel = AddGUILabelField("Using Colors Takes Longer!")
+
+$yellowDet = AddGUIColorCheckboxField("Enable Yellow", False, 0xc8b800)
+$yellowThresh = AddGUINumberField("Yellow Threshold (0-255):","230",False)
+
+$blueDet = AddGUIColorCheckboxField("Enable Blue", False, 0x007cc3)
+$blueThresh = AddGUINumberField("Blue Threshold (0-255):","230",False)
+
+$pinkDet = AddGUIColorCheckboxField("Enable Pink", False, 0xe173df)
+$pinkThresh = AddGUINumberField("Pink Threshold (0-255):","230",False)
+
+$whiteDet = AddGUIColorCheckboxField("Enable White", False, 0xe1e1e1)
+$whiteThresh = AddGUINumberField("White Threshold (0-255):","230",False)
+
+$redDet = AddGUIColorCheckboxField("Enable Red", False, 0x960000)
+$redThresh = AddGUINumberField("Red Threshold (0-255):","230",False)
+
+$greenDet = AddGUIColorCheckboxField("Enable Green", False, 0x009600)
+$greenThresh = AddGUINumberField("Green Threshold (0-255):","230",False)
+
+$purpleDet = AddGUIColorCheckboxField("Enable Purple", False, 0x790098)
+$purpleThresh = AddGUINumberField("Purple Threshold (0-255):","230",False)
+
+;END COLOR SETTINGS
+
+;IMAGE DISPLAY
+$imageDisplayFilename = ""
+$imageDisplayLeft = $guiWidth
+$imageDisplayTop = 0
+$imageDisplayWidth = $guiWidth
+$imageDisplayHeight = $guiHeight
+
+$imageDisplay = GUICtrlCreatePic($imageDisplayFilename, $imageDisplayLeft, $imageDisplayTop, $imageDisplayWidth, $imageDisplayHeight, $WS_BORDER + $SS_CENTERIMAGE)
+$flexX=$imageDisplayLeft + $padding
+$flexY=$imageDisplayTop+($imageDisplayHeight) - $fieldHeight - $padding
+AddGUILabelField("Image preview")
+;END IMAGE DISPLAY
+
+;UPDATE GUI FROM CONFIG STATE
 GUISetState()
 
 If FileExists($configFile) Then
@@ -386,6 +409,8 @@ While 1
 		Case $donateBtn
 			ShellExecute("http://www.paypal.me/Dewblackio2")
 		Case $openBtn
+			;$bPos = WinGetPos($optGUI)
+			;WinMove($optGUI, "", $bPos[0], $bPos[1], $guiWidth *2, $guiHeight)
 			Local $GDIImage
 			$imageFile = FileOpenDialog("Open Image", @WorkingDir, "Images (*.jpg;*.jpeg;*.gif;*.bmp)", 1) ;png is not supported in auto it function :c
 			If (@error) Then Exit
@@ -414,9 +439,8 @@ While 1
 			EndIf
 			$imageWD = Int($imageWD)
 			$imageHD = Int($imageHD)
-			GUICtrlSetPos($imageDisplay, 470, 16, $imageWD, $imageHD)
+			GUICtrlSetPos($imageDisplay, $imageDisplayLeft, $imageDisplayTop, $imageWD, $imageHD)
 			GUICtrlSetImage($imageDisplay, $imageFile)
-			GUICtrlSetPos($imageDisplay, 470, 16, 1065, 599)
 			GUICtrlSetState($openBtn, $GUI_DISABLE)
 			GUICtrlSetState($okBtn, $GUI_ENABLE)
 			GUICtrlSetState($resetBtn, $GUI_ENABLE)
@@ -462,9 +486,10 @@ While 1
 				$scriptPause = False
 				$drawing = 0
 				$bPos = WinGetPos($optGUI)
-				GUICtrlDelete($imageDisplay)
+				;GUICtrlDelete($imageDisplay)
 				;GUICtrlDelete($donateBtn)
-				WinMove($optGUI, "", $bPos[0], $bPos[1], 500, 760)
+
+				;WinMove($optGUI, "", $bPos[0], $bPos[1], $guiWidth, $guiHeight)
 				For $j = 1 To 8
 					$useColor[$j] = False
 				Next
@@ -524,14 +549,15 @@ While 1
 				If WinExists("Processing image...") Then
 					GUIDelete($GUI)
 				EndIf
-
-				$GUI = GUICreate("Processing image...", $width, $height + 20, -1, -1, $WS_CAPTION, BitOR($WS_EX_APPWINDOW, $WS_EX_TOOLWINDOW))
+				$windowPos = WinGetPos($windowTitle)
+				$GUI = GUICreate("Processing image...", $width, $height + 20, $windowPos[0]+$guiWidth, $windowPos[1], $WS_CAPTION, BitOR($WS_EX_APPWINDOW, $WS_EX_TOOLWINDOW))
 				GUISetBkColor(0xffffff)
 				$imageBox = GUICtrlCreatePic($imageFile, 0, 0, $width, $height)
 				$progress = GUICtrlCreateProgress(0, $height, $width, 20)
 				GUISetState()
 				ProcessImage()
 				GUICtrlSetState($showRect, $GUI_ENABLE)
+				UpdateConfig()
 			EndIf
 	EndSwitch
 WEnd
