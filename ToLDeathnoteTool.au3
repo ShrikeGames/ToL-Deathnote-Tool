@@ -51,6 +51,8 @@ Global $pixelHolder = False
 Global $skipColor = False
 Global $mouselocaPrevious = MouseGetPos()
 Global $mousePressed = False
+Global $selectingBackgroundColor = False
+
 ;START GUIMsgBox - Shows a message box in the GUI
 Func GUIMsgBox($type, $title, $text)
 	
@@ -381,9 +383,12 @@ $greenThresh = AddGUINumberField("Green Threshold (0-255):","150",False)
 $purpleDet = AddGUIColorCheckboxField("Enable Purple", False, 0x790098)
 $purpleThresh = AddGUINumberField("Purple Threshold (0-255):","150",False)
 
-$backgroundR = AddGUINumberField("Background Red (0-255):",255,False)
-$backgroundG = AddGUINumberField("Background Blue (0-255):",255,False)
-$backgroundB = AddGUINumberField("Background Green (0-255):",255,False)
+$backgroundR = GetConfigValue("Settings","backgroundR",255)
+$backgroundG = GetConfigValue("Settings","backgroundG",255)
+$backgroundB = GetConfigValue("Settings","backgroundB",255)
+$selectBackgroundColor = AddGUIButton("Select Background Color") ;Exit
+$flexY += $fieldHeight + ($padding)
+$selectedBackgroundColor = AddGUINumberField("Background Color:",$backgroundR&","&$backgroundG&","&$backgroundB,True)
 
 ;END COLOR SETTINGS
 
@@ -435,17 +440,20 @@ If FileExists($configFile) Then
 	GUICtrlSetData($redThresh, $redSelect)
 	GUICtrlSetData($greenThresh, $greenSelect)
 	GUICtrlSetData($purpleThresh, $purpleSelect)
+	
 EndIf
 
 ;Main Gui Control Messages
 While 1
-	If $debug == True And _IsPressed("01") Then
+	If $selectingBackgroundColor == True And _IsPressed("01") Then
 		$testpos = MouseGetPos()
 		$color = PixelGetColor($testpos[0],$testpos[1])
-		$red = _ColorGetRed($color)
-		$green = _ColorGetGreen($color)
-		$blue = _ColorGetBlue($color)
-		TrayTip("Color RGB:", $color&" "&$red&", "&$green&", "&$blue&" br="&GUICtrlRead($backgroundR)&" "&DiffIsWithin($red,GUICtrlRead($backgroundR),$bgTolerance), 20)
+		$backgroundR = _ColorGetRed($color)
+		$backgroundG = _ColorGetGreen($color)
+		$backgroundB = _ColorGetBlue($color)
+		$selectingBackgroundColor = False
+		GUICtrlSetData($selectedBackgroundColor, $backgroundR&","&$backgroundG&","&$backgroundB)
+		TrayTip("Color RGB:", $backgroundR&", "&$backgroundG&", "&$backgroundB, 20)
 	EndIf
 	If $drawFrame == True Then
 		Sleep(10)
@@ -462,6 +470,8 @@ While 1
 			Exit
 		Case $donateBtn
 			ShellExecute("http://www.paypal.me/Dewblackio2")
+		Case $selectBackgroundColor
+			$selectingBackgroundColor = True
 		Case $openBtn
 			;$bPos = WinGetPos($optGUI)
 			;WinMove($optGUI, "", $bPos[0], $bPos[1], $guiWidth *2, $guiHeight)

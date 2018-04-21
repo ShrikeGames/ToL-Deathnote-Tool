@@ -19,6 +19,7 @@
 - The program will now remember all of the color thresholds you input, not just black.
 - Added experimental skipping over the background color. Provide the RGB values and if a color matches perfectly it'll skip it during processing. You can change the tolerance by adding a "bgTolerance" value to the config.
 - You can set "debug=True" in the config to know the color of anything you click on.
+- You can now click a button then click anywhere to grab that color to use as the background color to be skipped.
 ```
 
 # Planned Features (For this Fork)
