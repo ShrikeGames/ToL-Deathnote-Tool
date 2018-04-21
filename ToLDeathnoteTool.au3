@@ -157,114 +157,6 @@ Global $flexX = $padding * 3
 Global $flexY = $padding * 3
 Global $fieldHeight = 20;
 
-Func AddGUINumberField($label, $defaultValue, $disabled)
-	
-	GUICtrlCreateLabel($label, $flexX, $flexY, $guiWidth/4, $fieldHeight)
-	GUICtrlSetFont(-1, 10)
-	GUICtrlSetResizing(-1, $GUI_DOCKALL)
-	
-	$left = $flexX+($guiWidth/4)
-	$top = $flexY
-	$flexY += $fieldHeight+$padding
-	$newField = GUICtrlCreateInput($defaultValue, $left, $top, ($guiWidth/4) - ($padding *4), $fieldHeight, $ES_NUMBER)
-	If $disabled Then
-		GUICtrlSetState(-1, $GUI_DISABLE)
-	EndIf
-	
-	GUICtrlSetFont(-1, 10)
-	GUICtrlSetResizing(-1, $GUI_DOCKALL)
-	return $newField
-EndFunc
-
-Func AddGUITextField($label, $defaultValue, $disabled)
-	
-	GUICtrlCreateLabel($label, $flexX, $flexY, $guiWidth/4, $fieldHeight)
-	GUICtrlSetFont(-1, 10)
-	GUICtrlSetResizing(-1, $GUI_DOCKALL)
-	
-	$left = $flexX+($guiWidth/4)
-	$top = $flexY
-	$flexY += $fieldHeight+$padding
-	$newField = GUICtrlCreateInput($defaultValue, $left, $top, ($guiWidth/4) - ($padding *4), $fieldHeight)
-	If $disabled Then
-		GUICtrlSetState(-1, $GUI_DISABLE)
-	EndIf
-	
-	GUICtrlSetFont(-1, 10)
-	GUICtrlSetResizing(-1, $GUI_DOCKALL)
-	return $newField
-EndFunc
-
-Func AddGUICheckboxField($label, $disabled)
-	
-	$left = $flexX
-	$top = $flexY
-	$newField = GUICtrlCreateCheckbox($label, $left, $top, ($guiWidth/2) - ($padding *4), $fieldHeight, BitOR($GUI_SS_DEFAULT_CHECKBOX, $BS_RIGHTBUTTON))
-	
-	$flexY += $fieldHeight+$padding
-	If $disabled Then
-		GUICtrlSetState(-1, $GUI_DISABLE)
-	EndIf
-	GUICtrlSetFont(-1, 10)
-	GUICtrlSetResizing(-1, $GUI_DOCKALL)
-	return $newField
-EndFunc
-
-Func AddGUIColorCheckboxField($label, $disabled, $color)
-	
-	$left = $flexX
-	$top = $flexY
-	GUICtrlCreateGraphic($left, $top, 24, 24)
-	GUICtrlSetBkColor(-1, $color)
-	GUICtrlSetResizing (-1, $GUI_DOCKALL)
-	$left += 24 + $padding
-	$newField = GUICtrlCreateCheckbox($label, $left, $top, ($guiWidth/2) - ($padding *5) - 24, $fieldHeight, BitOR($GUI_SS_DEFAULT_CHECKBOX, $BS_RIGHTBUTTON))
-	
-	$flexY += $fieldHeight+$padding
-	If $disabled Then
-		GUICtrlSetState(-1, $GUI_DISABLE)
-	EndIf
-	GUICtrlSetFont(-1, 10)
-	GUICtrlSetResizing(-1, $GUI_DOCKALL)
-	return $newField
-EndFunc
-
-
-Func AddGUILabelField($label)
-	
-	$left = $flexX
-	$top = $flexY
-	$newField = GUICtrlCreateLabel($label, $left, $top,  ($guiWidth/2) - ($padding *4), $fieldHeight)
-	
-	$flexY += $fieldHeight+$padding
-	GUICtrlSetColor(-1, 0x960000)
-	GUICtrlSetFont(-1, 10)
-	GUICtrlSetResizing(-1, $GUI_DOCKALL)
-	return $newField
-EndFunc
-
-Func AddGUIRadioField($label)
-	
-	$left = $flexX
-	$top = $flexY
-	$newField = GUICtrlCreateRadio($label, $left, $top,  ($guiWidth/2) - ($padding *4), $fieldHeight)
-	
-	$flexY += $fieldHeight+$padding
-	GUICtrlSetFont(-1, 10)
-	GUICtrlSetResizing(-1, $GUI_DOCKALL)
-	return $newField
-EndFunc
-
-Func AddGUIButton($label)
-	
-	$left = $flexX
-	$top = $flexY
-	$newField = GUICtrlCreateButton($label, $left, $top,  ($guiWidth/2) - ($padding *4), $fieldHeight)
-	
-	GUICtrlSetFont(-1, 10)
-	GUICtrlSetResizing(-1, $GUI_DOCKALL)
-	return $newField
-EndFunc
 $optGUI = GUICreate($windowTitle, $guiWidth*2, $guiHeight, $windowPosX+$guiWidth, $windowPosY, $disableWindowBarOptions, $windowStyle)
 
 ;BANNER SETTINGS
@@ -453,7 +345,7 @@ While 1
 		$backgroundB = _ColorGetBlue($color)
 		$selectingBackgroundColor = False
 		GUICtrlSetData($selectedBackgroundColor, $backgroundR&","&$backgroundG&","&$backgroundB)
-		TrayTip("Color RGB:", $backgroundR&", "&$backgroundG&", "&$backgroundB, 20)
+		TrayTip("Color RGB:", $backgroundR&", "&$backgroundG&", "&$backgroundB, 10)
 	EndIf
 	If $drawFrame == True Then
 		Sleep(10)
@@ -536,6 +428,7 @@ While 1
 			EndIf
 			Exit
 		Case $okBtn
+			TrayTip("Color RGB:", $backgroundR&", "&$backgroundG&", "&$backgroundB, 20)
 			UpdateConfig()
 			If GUICtrlRead($widthInput) > @DesktopWidth Or GUICtrlRead($heightInput) > @DesktopHeight Then
 				GUIMsgBox($MB_ICONWARNING, "Error", "Image Size Exceeds Desktop Display Size!")
@@ -696,7 +589,7 @@ Func ProcessImage()
 			$green = _ColorGetGreen($color)
 			$blue = _ColorGetBlue($color)
 			
-			If $bgTolerance>=0 And DiffIsWithin($red,GUICtrlRead($backgroundR),$bgTolerance) And DiffIsWithin($green,GUICtrlRead($backgroundG),$bgTolerance) And DiffIsWithin($blue,GUICtrlRead($backgroundB),$bgTolerance) Then
+			If $bgTolerance>=0 And DiffIsWithin($red,$backgroundR,$bgTolerance) And DiffIsWithin($green,$backgroundG,$bgTolerance) And DiffIsWithin($blue,$backgroundB,$bgTolerance) Then
 				;TrayTip("DEBUG", $color&" "&$red&","&$green&","&$blue&" vs "&$backgroundR&","&$backgroundG&","&$backgroundB, 1)
 				ContinueLoop
 			Else
@@ -1242,6 +1135,116 @@ Func SkipNext()
 	$skipColor = True
 	$pixelHolder = False
 EndFunc   ;==>SkipNext
+
+
+Func AddGUINumberField($label, $defaultValue, $disabled)
+	
+	GUICtrlCreateLabel($label, $flexX, $flexY, $guiWidth/4, $fieldHeight)
+	GUICtrlSetFont(-1, 10)
+	GUICtrlSetResizing(-1, $GUI_DOCKALL)
+	
+	$left = $flexX+($guiWidth/4)
+	$top = $flexY
+	$flexY += $fieldHeight+$padding
+	$newField = GUICtrlCreateInput($defaultValue, $left, $top, ($guiWidth/4) - ($padding *4), $fieldHeight, $ES_NUMBER)
+	If $disabled Then
+		GUICtrlSetState(-1, $GUI_DISABLE)
+	EndIf
+	
+	GUICtrlSetFont(-1, 10)
+	GUICtrlSetResizing(-1, $GUI_DOCKALL)
+	return $newField
+EndFunc
+
+Func AddGUITextField($label, $defaultValue, $disabled)
+	
+	GUICtrlCreateLabel($label, $flexX, $flexY, $guiWidth/4, $fieldHeight)
+	GUICtrlSetFont(-1, 10)
+	GUICtrlSetResizing(-1, $GUI_DOCKALL)
+	
+	$left = $flexX+($guiWidth/4)
+	$top = $flexY
+	$flexY += $fieldHeight+$padding
+	$newField = GUICtrlCreateInput($defaultValue, $left, $top, ($guiWidth/4) - ($padding *4), $fieldHeight)
+	If $disabled Then
+		GUICtrlSetState(-1, $GUI_DISABLE)
+	EndIf
+	
+	GUICtrlSetFont(-1, 10)
+	GUICtrlSetResizing(-1, $GUI_DOCKALL)
+	return $newField
+EndFunc
+
+Func AddGUICheckboxField($label, $disabled)
+	
+	$left = $flexX
+	$top = $flexY
+	$newField = GUICtrlCreateCheckbox($label, $left, $top, ($guiWidth/2) - ($padding *4), $fieldHeight, BitOR($GUI_SS_DEFAULT_CHECKBOX, $BS_RIGHTBUTTON))
+	
+	$flexY += $fieldHeight+$padding
+	If $disabled Then
+		GUICtrlSetState(-1, $GUI_DISABLE)
+	EndIf
+	GUICtrlSetFont(-1, 10)
+	GUICtrlSetResizing(-1, $GUI_DOCKALL)
+	return $newField
+EndFunc
+
+Func AddGUIColorCheckboxField($label, $disabled, $color)
+	
+	$left = $flexX
+	$top = $flexY
+	GUICtrlCreateGraphic($left, $top, 24, 24)
+	GUICtrlSetBkColor(-1, $color)
+	GUICtrlSetResizing (-1, $GUI_DOCKALL)
+	$left += 24 + $padding
+	$newField = GUICtrlCreateCheckbox($label, $left, $top, ($guiWidth/2) - ($padding *5) - 24, $fieldHeight, BitOR($GUI_SS_DEFAULT_CHECKBOX, $BS_RIGHTBUTTON))
+	
+	$flexY += $fieldHeight+$padding
+	If $disabled Then
+		GUICtrlSetState(-1, $GUI_DISABLE)
+	EndIf
+	GUICtrlSetFont(-1, 10)
+	GUICtrlSetResizing(-1, $GUI_DOCKALL)
+	return $newField
+EndFunc
+
+
+Func AddGUILabelField($label)
+	
+	$left = $flexX
+	$top = $flexY
+	$newField = GUICtrlCreateLabel($label, $left, $top,  ($guiWidth/2) - ($padding *4), $fieldHeight)
+	
+	$flexY += $fieldHeight+$padding
+	GUICtrlSetColor(-1, 0x960000)
+	GUICtrlSetFont(-1, 10)
+	GUICtrlSetResizing(-1, $GUI_DOCKALL)
+	return $newField
+EndFunc
+
+Func AddGUIRadioField($label)
+	
+	$left = $flexX
+	$top = $flexY
+	$newField = GUICtrlCreateRadio($label, $left, $top,  ($guiWidth/2) - ($padding *4), $fieldHeight)
+	
+	$flexY += $fieldHeight+$padding
+	GUICtrlSetFont(-1, 10)
+	GUICtrlSetResizing(-1, $GUI_DOCKALL)
+	return $newField
+EndFunc
+
+Func AddGUIButton($label)
+	
+	$left = $flexX
+	$top = $flexY
+	$newField = GUICtrlCreateButton($label, $left, $top,  ($guiWidth/2) - ($padding *4), $fieldHeight)
+	
+	GUICtrlSetFont(-1, 10)
+	GUICtrlSetResizing(-1, $GUI_DOCKALL)
+	return $newField
+EndFunc
 
 ;i'm not even sure i need to bother commenting this one...
 Func Quit()
