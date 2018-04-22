@@ -650,6 +650,7 @@ Func ProcessImage()
 
 	HotKeySet("{F9}", "Draw")
 	HotKeySet("{F10}", "Quit")
+	
 EndFunc   ;==>ProcessImage
 
 Func OnPaint($hwndGUI, $msgID, $wParam, $lParam)
@@ -681,7 +682,6 @@ Func CompareColor($rVal, $gVal, $bVal)
 		$lab1 =$rgb2LabMap.Item($key)
 	Else
 		$lab1 = rgb2lab ($rVal, $gVal, $bVal)
-		$rgb2LabMap.Add($key,$lab1)
 	EndIf
 	For $i = 0 To 7
 		$lab2 = $lab2s[$i]
@@ -710,6 +710,10 @@ EndFunc   ;==>GetCode
 
 ;RGB to Lab function
 Func rgb2lab($r, $g, $b)
+	Local $key=$r&","&$g&","& $b
+	If $rgb2LabMap.Exists($key) Then
+		return $rgb2LabMap.Item($key)
+	EndIf
 	Local $rr = 0.0
 	Local $gg = 0.0
 	Local $bb = 0.0
@@ -792,6 +796,7 @@ Func rgb2lab($r, $g, $b)
 	$labb[0] = Int(2.55 * $Ls + 0.5)
 	$labb[1] = Int($as + 0.5)
 	$labb[2] = Int($bs + 0.5)
+	$rgb2LabMap.Add($key,$labb)
 	Return $labb
 EndFunc   ;==>rgb2lab
 
