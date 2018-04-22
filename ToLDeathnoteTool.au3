@@ -52,6 +52,19 @@ Global $skipColor = False
 Global $mouselocaPrevious = MouseGetPos()
 Global $mousePressed = False
 Global $selectingBackgroundColor = False
+Global $rgb2LabMap = ObjCreate("Scripting.Dictionary")
+
+Global $ToLColors[8] = [0x000000, 0xc8b800, 0x007cc3, 0xe173df, 0xe1e1e1, 0x960000, 0x009600, 0x790098] ;Black - yellow - blue - pink - white - Red - green - purple
+Global $rHolds[8]=[0,0,0,0,0,0,0,0]
+Global $gHolds[8]=[0,0,0,0,0,0,0,0]
+Global $bHolds[8]=[0,0,0,0,0,0,0,0]
+Global $lab2s[8]=[0,0,0,0,0,0,0,0]
+For $i = 0 To 7
+	$rHolds[$i] = _ColorGetRed($ToLColors[$i])
+	$gHolds[$i] = _ColorGetGreen($ToLColors[$i])
+	$bHolds[$i] = _ColorGetBlue($ToLColors[$i])
+	$lab2s[$i] = rgb2lab ($rHolds[$i], $gHolds[$i], $bHolds[$i])
+Next
 
 ;START GUIMsgBox - Shows a message box in the GUI
 Func GUIMsgBox($type, $title, $text)
@@ -651,14 +664,10 @@ Func OnPaint($hwndGUI, $msgID, $wParam, $lParam)
 	Return $GUI_RUNDEFMSG
 EndFunc   ;==>OnPaint
 
+
 ;Color comparrison function using RGB -> XYZ -> LAB (much more accurate than using basic RGB color comparisson)
 Func CompareColor($rVal, $gVal, $bVal)
-	Local $ToLColors[8] = [0x000000, 0xc8b800, 0x007cc3, 0xe173df, 0xe1e1e1, 0x960000, 0x009600, 0x790098] ;Black - yellow - blue - pink - white - Red - green - purple
-	For $h = 0 To 7
-		If $useColor[$h] == False Then
-			$ToLColors[$h] = 0x000000
-		EndIf
-	Next
+	
 	Local $closest = 0x000000
 	Local $diffMain = 200000000
 	Local $diffCompare = 0
@@ -667,13 +676,15 @@ Func CompareColor($rVal, $gVal, $bVal)
 	Local $gHold
 	Local $bHold
 	Local $lab1[3] = [0, 0, 0]
-	Local $lab2[3] = [0, 0, 0]
+	Local $key=$rVal&","&$gVal&","& $bVal
+	If $rgb2LabMap.Exists($key) Then
+		$lab1 =$rgb2LabMap.Item($key)
+	Else
+		$lab1 = rgb2lab ($rVal, $gVal, $bVal)
+		$rgb2LabMap.Add($key,$lab1)
+	EndIf
 	For $i = 0 To 7
-		$rHold = _ColorGetRed($ToLColors[$i])
-		$gHold = _ColorGetGreen($ToLColors[$i])
-		$bHold = _ColorGetBlue($ToLColors[$i])
-		$lab1 = rgb2lab($rVal, $gVal, $bVal)
-		$lab2 = rgb2lab($rHold, $gHold, $bHold)
+		$lab2 = $lab2s[$i]
 		$diffCompare = Sqrt((($lab2[0] - $lab1[0]) ^ 2) + (($lab2[1] - $lab1[1]) ^ 2) + (($lab2[2] - $lab1[2]) ^ 2))
 		If $diffCompare < $diffMain Then
 			$closest = $ToLColors[$i]

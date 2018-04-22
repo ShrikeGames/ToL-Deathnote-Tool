@@ -20,6 +20,7 @@
 - Added experimental skipping over the background color. Provide the RGB values and if a color matches perfectly it'll skip it during processing. You can change the tolerance by adding a "bgTolerance" value to the config.
 - You can set "debug=True" in the config to know the color of anything you click on.
 - You can now click a button then click anywhere to grab that color to use as the background color to be skipped.
+- Added some optimizations to the ColorCompare function so it doesn't need to convert the 8 predefined colors everytime. And includes a cache for when you re-apply with different colors/thresholds.
 ```
 
 # Planned Features (For this Fork)
