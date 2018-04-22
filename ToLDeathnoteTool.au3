@@ -677,12 +677,8 @@ Func CompareColor($rVal, $gVal, $bVal)
 	Local $gHold
 	Local $bHold
 	Local $lab1[3] = [0, 0, 0]
-	Local $key=$rVal&","&$gVal&","& $bVal
-	If $rgb2LabMap.Exists($key) Then
-		$lab1 =$rgb2LabMap.Item($key)
-	Else
-		$lab1 = rgb2lab ($rVal, $gVal, $bVal)
-	EndIf
+
+	$lab1 = rgb2lab ($rVal, $gVal, $bVal)
 	For $i = 0 To 7
 		$lab2 = $lab2s[$i]
 		$diffCompare = Sqrt((($lab2[0] - $lab1[0]) ^ 2) + (($lab2[1] - $lab1[1]) ^ 2) + (($lab2[2] - $lab1[2]) ^ 2))
