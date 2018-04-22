@@ -575,6 +575,7 @@ Func DiffIsWithin($first,$second,$allowedDifference)
 EndFunc
 ;Main Function to process the image when apply is pressed
 Func ProcessImage()
+	Local $hTimer = TimerInit()
 	$dc = _WinAPI_GetDC($GUI)
 	$memDc = _WinAPI_CreateCompatibleDC($dc)
 	$bitmap = _WinAPI_CreateCompatibleBitmap($dc, $width, $height)
@@ -650,7 +651,9 @@ Func ProcessImage()
 
 	HotKeySet("{F9}", "Draw")
 	HotKeySet("{F10}", "Quit")
-	
+	Local $fDiff = TimerDiff($hTimer) ; Find the difference in time from the previous call of TimerInit. The variable we stored the TimerInit handlem is passed as the "handle" to TimerDiff.
+	MsgBox($MB_SYSTEMMODAL, "Process Complete", "It took "&($fDiff/1000)&" seconds to complete")
+
 EndFunc   ;==>ProcessImage
 
 Func OnPaint($hwndGUI, $msgID, $wParam, $lParam)

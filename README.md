@@ -21,6 +21,7 @@
 - You can set "debug=True" in the config to know the color of anything you click on.
 - You can now click a button then click anywhere to grab that color to use as the background color to be skipped.
 - Added some optimizations to the ColorCompare function so it doesn't need to convert the 8 predefined colors everytime. And includes a cache for when you re-apply with different colors/thresholds.
+- Added processing time prompt.
 ```
 
 # Planned Features (For this Fork)
@@ -38,6 +39,12 @@
 - Adjust GUI creation to be responsive/flow instead of hard-coded coordinates and sizes
 - Investigate integration with the ToL fill tool to speed up the drawing process
 ```
+
+# Performance Improvements
+Original 1.2
+![image](https://i.imgur.com/QusKNS3.png)
+1.3-SNAPSHOT
+![image](https://i.imgur.com/3F1y5fE.png)
 
 # ORIGINAL FROM 1.2 BELOW
 
