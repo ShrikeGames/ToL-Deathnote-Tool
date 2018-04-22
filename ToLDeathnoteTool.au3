@@ -683,7 +683,11 @@ Func CompareColor($rVal, $gVal, $bVal)
 
 	$lab1 = rgb2lab ($rVal, $gVal, $bVal)
 	For $i = 0 To 7
-		$lab2 = $lab2s[$i]
+		$tolColorIndex = $i
+		if $useColor[$i] == False Then
+			$tolColorIndex = 0
+		EndIf
+		$lab2 = $lab2s[$tolColorIndex]
 		$diffCompare = Sqrt((($lab2[0] - $lab1[0]) ^ 2) + (($lab2[1] - $lab1[1]) ^ 2) + (($lab2[2] - $lab1[2]) ^ 2))
 		If $diffCompare < $diffMain Then
 			$closest = $ToLColors[$i]
